@@ -1,0 +1,53 @@
+version: '2'
+
+services:
+
+  web:
+    restart: always
+    build: .
+
+    command: bash -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8792"
+
+    environment:
+      DEBUG: 'true'
+      DB_USER: documentuser
+      DB_PASSWORD: documentpass
+      DB_NAME: documentdb
+      DB_PORT: 5432
+      DB_HOST: db
+
+    volumes:
+      - .:/SignEasy
+    ports:
+      - "8792:8792"
+    depends_on:
+      - db
+    links:
+      - db:db
+    networks:
+      - document-network
+
+  db:
+    image: postgres:11.4
+    restart: always
+
+    expose:
+      - "5432"
+
+    environment:
+      POSTGRES_USER: documentuser
+      POSTGRES_PASSWORD: documentpass
+      POSTGRES_DB: documentdb
+      PGDATA: /var/lib/postgresql/data
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    networks:
+      - document-network
+
+volumes:
+  pgdata:
+    driver: local
+networks:
+  document-network:
