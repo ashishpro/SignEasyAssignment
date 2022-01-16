@@ -19,7 +19,8 @@ class RestTokenDecoderMiddleware(MiddlewareMixin):
         elif "/media/document_diff_files/" in request.path:
             return
 
-        if request.path not in ['/docs',
+        if request.path not in ['/swagger/',
+                                '/redoc/',
                                 '/api/v1/login/',
                                 '/api/v1/register/',
                                 '/api/v1/reset-password/']:
