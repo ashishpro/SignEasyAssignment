@@ -6,14 +6,14 @@
 ## Swagger Details
 - Make sure DEBUG=True in settings.py
 - python manage.py runserver 0.0.0.0:8792 
->`Some api(s) show incorrect field type and required fields in the serializer. Go through the Postman or PDF documentation`
+>`Some api(s) show incorrect field type and required fields in the serializer. Go through the Postman documentation`
 ```bash
 http://0.0.0.0:8792/swagger
 ```
 ## Open API Documentation
 - Make sure DEBUG=True in settings.py 
 - python manage.py runserver 0.0.0.0:8792 
->`Some api(s) show incorrect field type and ?required fields in the serializer. Go through the Postman or PDF documentation`
+>`Some api(s) show incorrect field type and required fields in the serializer. Go through the Postman documentation`
 ```bash
 http://0.0.0.0:8792/redoc
 ```
