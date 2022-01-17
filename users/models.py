@@ -5,6 +5,15 @@ from users.managers import UserManager
 
 
 class User(AbstractBaseUser):
+    """
+    User model responsible to store the basic user information.
+    
+    first_name[string]:
+    last_name[string]:
+    username[string]:
+    email[email]:
+    created_on[datetime]: datetime when this object is created
+    """
     first_name = models.CharField(max_length=56)
     last_name = models.CharField(max_length=56)
     username = models.CharField(max_length=56, unique=True)
@@ -19,6 +28,9 @@ class User(AbstractBaseUser):
         return f"{self.username}"
 
     def basic_user_info(self):
+        """
+        method to return the basic user information used for the login and registration response.
+        """
         user_info = dict()
         user_info['id'] = self.id
         user_info["last_login"] = self.last_login
@@ -29,10 +41,15 @@ class User(AbstractBaseUser):
 
     @property
     def fullname(self):
+        """
+        dynamic full name property from the user model
+        """
         return f"{self.first_name} {self.last_name}"
 
     def get_jwt_token_for_user(self):
-        """ get jwt token for the user """
+        """
+        get jwt token for the user
+        """
         jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
         jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
         payload = jwt_payload_handler(self)

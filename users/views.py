@@ -10,6 +10,9 @@ from .serializers import UserListSerializer, UserUpdateSerializer,\
 
 
 class UserView(viewsets.ModelViewSet):
+    """
+    Basic User CRUD API
+    """
     model = User
     queryset = User.objects.all()
 
@@ -36,6 +39,9 @@ class UserView(viewsets.ModelViewSet):
             return UserListSerializer
 
     def list(self, request, *args, **kwargs):
+        """
+        overriding the list(get) method to give the functionality to remove pagination if needed.
+        """
         if request.query_params.get('remove_pagination'):
             self.pagination_class = None
         return super(UserView, self).list(request, *args, **kwargs)
@@ -49,7 +55,9 @@ class UserView(viewsets.ModelViewSet):
 
 
 class PasswordResetView(generics.CreateAPIView):
-
+    """
+    User password reset API
+    """
     serializer_class = PasswordResetSerializer
 
     def post(self, request, *args, **kwargs):
@@ -64,6 +72,9 @@ class PasswordResetView(generics.CreateAPIView):
 
 
 class UserRegistrationView(generics.CreateAPIView):
+    """
+    User Registration API 
+    """
 
     serializer_class = RegisterSerializer
 
@@ -79,6 +90,9 @@ class UserRegistrationView(generics.CreateAPIView):
 
 
 class LoginView(generics.CreateAPIView):
+    """
+    Login API
+    """
 
     serializer_class = LoginSerializer
 

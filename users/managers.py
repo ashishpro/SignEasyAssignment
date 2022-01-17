@@ -3,6 +3,9 @@ from rest_framework import exceptions
 
 
 class UserManager(BaseUserManager):
+    """
+    Overridding the user baseManager to add a new createUser method to ease up user creation.
+    """
 
     def _create_user(self, **extra_fields):
         try:

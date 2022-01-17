@@ -10,15 +10,25 @@ settings = LazySettings()
 
 
 class RestTokenDecoderMiddleware(MiddlewareMixin):
+    """
+    Custom authentication middleware for JWT
+    """
 
     def process_request(self, request):
-
+        
+        """
+        disabling the any user to view the document file from the django media URL.
+        only documentVersion diff_file can be viewed with django media URL.
+        """
         if "/media/document_version_files/" in request.path or "/media/document/" in request.path:
             return JsonResponse({"error": "Use '/api/v1/fetch_document/' api to fetch or view a media document."},
                                 status=401)
         elif "/media/document_diff_files/" in request.path:
             return
 
+        """
+        Bypassing few API endpoints with doesn't require authentication token.
+        """
         if request.path not in ['/swagger/',
                                 '/redoc/',
                                 '/api/v1/login/',
@@ -33,6 +43,9 @@ class RestTokenDecoderMiddleware(MiddlewareMixin):
     def get_jwt_user(self, request):
 
         try:
+            """
+            Fetching the Authentication token from the header
+            """
             assert request.META.get('HTTP_AUTHORIZATION', None)
             token_name, token_key = request.META.get('HTTP_AUTHORIZATION', None).split()
         except AssertionError:
