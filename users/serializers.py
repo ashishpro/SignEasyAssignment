@@ -50,11 +50,11 @@ class PasswordResetSerializer(serializers.Serializer):
 
     def validate_username(self, username):
         """
-        Check whether the username already exists or not.
+        Check whether the username exists or not.
         """
         if User.objects.filter(username=username):
-            raise serializers.ValidationError("Username already exists.")
-        return username
+            return username
+        raise serializers.ValidationError("Username doesn't exists.")
 
     def validate(self, attrs):
         """
