@@ -78,6 +78,16 @@ class DocumentView(viewsets.ModelViewSet):
 
             return response.Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    def destroy(self, request, *args, **kwargs):
+        """
+        Remove document only if the current logged in user is the owner of the document.
+        """
+        instance = self.get_object()
+        if instance.owner != self.request.user:
+            raise exceptions.ValidationError("Only document owner is allowed to delete document")
+        self.perform_destroy(instance)
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class DocumentVersionView(generics.ListAPIView, generics.RetrieveAPIView):
     """

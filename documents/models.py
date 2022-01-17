@@ -16,10 +16,10 @@ class Document(models.Model):
     """
     document_name = models.CharField(max_length=128)
     document = models.FileField(upload_to="document/")
-    owner = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name="document_owner", null=True, blank=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="document_owner", null=True, blank=True)
     shared_with = models.JSONField(default=list)
     created_on = models.DateTimeField(auto_now_add=True)
-    currently_edited_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True,
+    currently_edited_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
                                             related_name="document_currently_edited_by")
 
     class Meta:
@@ -64,9 +64,9 @@ class DocumentVersion(models.Model):
     diff_file[file]: A file that contains the info of both the old lines and the new lines that replaced them.
                      Check the APIdocumentation PDF mentioned in the README.md
     """
-    parent_document = models.ForeignKey("Document", on_delete=models.DO_NOTHING, null=True, blank=True)
+    parent_document = models.ForeignKey("Document", on_delete=models.CASCADE, null=True, blank=True)
     document = models.FileField(upload_to="document_version_files/", null=True, blank=True)
-    updated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    updated_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_on = models.DateTimeField(auto_now_add=True)
     diff_file = models.FileField(upload_to="document_diff_files/", null=True, blank=True)
 
