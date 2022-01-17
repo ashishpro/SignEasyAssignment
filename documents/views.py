@@ -16,6 +16,9 @@ from django.core.files import File
 
 
 class DocumentView(viewsets.ModelViewSet):
+    """
+    Basic Document CRUD API
+    """
     model = Document
     queryset = Document.objects.all()
 
@@ -42,15 +45,24 @@ class DocumentView(viewsets.ModelViewSet):
             return DocumentListSerializer
 
     def list(self, request, *args, **kwargs):
+        """
+        overriding the list(get) method to give the functionality to remove pagination if needed.
+        """
         if request.query_params.get('remove_pagination'):
             self.pagination_class = None
         return super(DocumentView, self).list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
+        """
+        Create the document object and also create the document version object.
+        """
         serializer = self.get_serializer(data=request.data, context={"request": self.request})
         if serializer.is_valid(raise_exception=True):
             self.perform_create(serializer)
             instance = serializer.instance
+            """
+            fetching current user from the request that is currently logged in.
+            """
             instance.owner = self.request.user
             instance.save()
 
@@ -68,6 +80,9 @@ class DocumentView(viewsets.ModelViewSet):
 
 
 class DocumentVersionView(generics.ListAPIView, generics.RetrieveAPIView):
+    """
+    Document Version supports only GET
+    """
     model = DocumentVersion
     queryset = DocumentVersion.objects.all()
 
@@ -87,12 +102,19 @@ class DocumentVersionView(generics.ListAPIView, generics.RetrieveAPIView):
     ordering = ['-created_on']
 
     def list(self, request, *args, **kwargs):
+        """
+        overriding the list(get) method to give the functionality to remove pagination if needed.
+        """
         if request.query_params.get('remove_pagination'):
             self.pagination_class = None
         return super(DocumentVersionView, self).list(request, *args, **kwargs)
 
 
 class AddCollaboratorView(generics.CreateAPIView, generics.DestroyAPIView):
+    """
+    API responsible for adding new collaborator to the document.
+    Note: go through the validation errors below to understand the validation conditions.
+    """
     model = Document
     serializer_class = AddCollaboratorSerializer
 
@@ -119,6 +141,10 @@ class AddCollaboratorView(generics.CreateAPIView, generics.DestroyAPIView):
 
 
 class RemoveCollaboratorView(generics.CreateAPIView, generics.DestroyAPIView):
+    """
+    API responsible for removing a collaborator to the document.
+    Note: go through the validation errors below to understand the validation conditions.
+    """
     model = Document
     serializer_class = RemoveCollaboratorSerializer
 
@@ -148,6 +174,12 @@ class RemoveCollaboratorView(generics.CreateAPIView, generics.DestroyAPIView):
 
 
 class FetchDocumentView(views.APIView):
+    """
+    API responsible for downloading the document and locking the document object.
+    So no other collaborators or owner are allowed to download it.
+    (downloading the document through the django media URL has been disabled)
+    Note: go through the validation errors below to understand the validation conditions.
+    """
     model = Document
     queryset = Document.objects.all()
 
@@ -172,6 +204,9 @@ class FetchDocumentView(views.APIView):
 
         if self.is_valid(current_user, document_obj):
             try:
+                """
+                dynamically determing the content-type of the document for the HttpResponse below.
+                """
                 mime_type = mimetypes.guess_type(document_obj.document.path)
                 mime_type = mime_type[0]
             except Exception:
@@ -191,11 +226,19 @@ class FetchDocumentView(views.APIView):
 
 
 class UploadEditedDocumentView(generics.UpdateAPIView):
+    """
+    API responsible for uploading the edited document and un-locking the document object.
+    So other collaborators or owner are allowed to download it again.
+    Note: go through the validation errors below to understand the validation conditions.
+    """
     model = Document
     queryset = Document.objects.all()
     serializer_class = UploadEditedDocumentSerializer
 
     def get_object(self, **kwargs):
+        """
+        Checking whether the pk mentioned in the URL is valid or not.
+        """
         if self.model.objects.filter(id=kwargs.get('pk')).exists():
             return self.model.objects.get(id=kwargs.get('pk'))
         raise exceptions.ValidationError("Invalid document ID in the URL.")
@@ -209,6 +252,9 @@ class UploadEditedDocumentView(generics.UpdateAPIView):
             file_ext = pathlib.Path(document_obj.document.path).suffix
 
             try:
+                """
+                creating the file of the new document that is in the request body.
+                """
                 temp_file_dir = '/tmp'
                 temp_file_path = f"{temp_file_dir}/document_{uuid.uuid4().__str__()[:8]}{file_ext}"
                 with open(temp_file_path, "wb+") as outfile:
@@ -217,6 +263,11 @@ class UploadEditedDocumentView(generics.UpdateAPIView):
             except Exception as e:
                 raise exceptions.ValidationError("Unable to create temporary document file.")
 
+            """
+            Checking whether the file new document file in the request and the document file whos PK is mentioned
+            in the URL are same are not.
+            If the file are same then create a document version and return response.
+            """
             if filecmp.cmp(document_obj.document.path, temp_file_path, shallow=False):
                 try:
                     document_version_obj = DocumentVersion(parent_document=document_obj, updated_by=self.request.user)
@@ -233,7 +284,10 @@ class UploadEditedDocumentView(generics.UpdateAPIView):
                 temp_file_diff_path = f"{temp_file_dir}/{temp_file_diff_name}"
 
                 differ = difflib.Differ()
-
+                """
+                check line by line and write the file difference in a new file. That will be saved against the
+                'diff_file' filed of the documentVersion model.
+                """
                 with open(document_obj.document.path, "r") as current_file, open(temp_file_path, "r") as new_file,\
                         open(temp_file_diff_path, "w+") as diff_file:
                     for line in differ.compare(current_file.readlines(), new_file.readlines()):
