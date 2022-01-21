@@ -83,7 +83,7 @@ class DocumentView(viewsets.ModelViewSet):
         Remove document only if the current logged in user is the owner of the document.
         """
         instance = self.get_object()
-        if instance.owner != self.request.user:
+        if instance.owner != self.request.user and instance.owner != None:
             raise exceptions.ValidationError("Only document owner is allowed to delete document")
         self.perform_destroy(instance)
         return response.Response(status=status.HTTP_204_NO_CONTENT)

@@ -1,3 +1,4 @@
+import uuid
 from rest_framework import serializers
 from .models import Document, DocumentVersion
 from users.models import User
@@ -14,6 +15,12 @@ class DocumentCreateSerializer(serializers.ModelSerializer):
     def get_owner(self, obj):
         return UserMinimalListSerializer(obj.owner).data
 
+    def validate(self, attrs):
+        document_name = attrs.get("document_name")
+        user = self.context.get("request").user
+        if Document.objects.filter(owner=user, document_name=document_name).exists():
+            attrs["document_name"] = f"{document_name}_{uuid.uuid4().__str__()[:8]}"
+        return super(DocumentCreateSerializer, self).validate(attrs)
     class Meta:
         model = Document
         """
